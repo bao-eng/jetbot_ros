@@ -10,6 +10,29 @@ from PIL import ImageFont
 
 import subprocess
 
+import struct
+import smbus
+import sys
+
+def readVoltage(bus):
+
+     address = 0x36
+     read = bus.read_word_data(address, 2)
+     swapped = struct.unpack("<H", struct.pack(">H", read))[0]
+     voltage = swapped * 1.25 /1000/16
+     return voltage
+
+
+def readCapacity(bus):
+
+     address = 0x36
+     read = bus.read_word_data(address, 4)
+     swapped = struct.unpack("<H", struct.pack(">H", read))[0]
+     capacity = swapped/256
+     return capacity
+
+bus = smbus.SMBus(1) # 0 = /dev/i2c-0 (port I2C0), 1 = /dev/i2c-1 (port I2C1)
+
 from std_msgs.msg import String
 
 
@@ -86,16 +109,24 @@ if __name__ == '__main__':
 		MemUsage = subprocess.check_output(cmd, shell = True )
 		cmd = "df -h | awk '$NF==\"/\"{printf \"Disk: %d/%dGB %s\", $3,$2,$5}'"
 		Disk = subprocess.check_output(cmd, shell = True )
+		batt = readCapacity(bus)
+		volt = readVoltage(bus)
 
 		# Write two lines of text.
-		if not user_text is None:
-			draw.text((x, top), user_text,  font=font, fill=255)
-		else:
-			draw.text((x, top), "eth0: " + str(get_ip_address('eth0')), font=font, fill=255)
+		#if not user_text is None:
+		#	draw.text((x, top), user_text,  font=font, fill=255)
+		#else:
+		#	draw.text((x, top), "eth0: " + str(get_ip_address('eth0')), font=font, fill=255)
 		
+		draw.text((x, top),  "SOC:" + "%3d" % batt + "%  " + "%1.2f" % volt + "V", font=font, fill=255)
 		draw.text((x, top+8),  "wlan0: " + str(get_ip_address('wlan0')), font=font, fill=255)
 		draw.text((x, top+16), str(MemUsage.decode('utf-8')),  font=font, fill=255)
-		draw.text((x, top+25), str(Disk.decode('utf-8')),  font=font, fill=255)
+		# Write two lines of text.
+                if not user_text is None:
+                       draw.text((x, top+25), user_text,  font=font, fill=255)
+                else:
+                #       draw.text((x, top), "eth0: " + str(get_ip_address('eth0')), font=font, fill=255)
+			draw.text((x, top+25), str(Disk.decode('utf-8')),  font=font, fill=255)
 
 		# Display image.
 		disp.image(image)
