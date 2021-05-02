@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import rospy
 import time
 
 import Adafruit_SSD1306
@@ -32,6 +33,8 @@ def readCapacity(bus):
 
 bus = smbus.SMBus(1) # 0 = /dev/i2c-0 (port I2C0), 1 = /dev/i2c-1 (port I2C1)
 
+from std_msgs.msg import String
+
 
 def get_ip_address(interface):
     if get_network_interface_state(interface) == 'down':
@@ -42,6 +45,16 @@ def get_ip_address(interface):
 
 def get_network_interface_state(interface):
     return subprocess.check_output('cat /sys/class/net/%s/operstate' % interface, shell=True).decode('ascii')[:-1]
+
+
+user_text=None
+
+def on_user_text(msg):
+	global user_text	
+	user_text=msg.data
+
+	rospy.loginfo(rospy.get_caller_id() + ' user_text=%s', msg.data)
+
 
 # initialization
 if __name__ == '__main__':
@@ -79,10 +92,12 @@ if __name__ == '__main__':
 	# Load default font.
 	font = ImageFont.load_default()
 
-	i = 0
+	# setup ros node
+	rospy.init_node('jetbot_oled')
+	rospy.Subscriber('~user_text', String, on_user_text)
 
 	# start running
-	while True:
+	while not rospy.core.is_shutdown():
             
 		# Draw a black filled box to clear the image.
 		draw.rectangle((0,0,width,height), outline=0, fill=0)
@@ -97,24 +112,26 @@ if __name__ == '__main__':
 		batt = readCapacity(bus)
 		volt = readVoltage(bus)
 
-		if i == 0 :
-			char = '|'
-		if i == 1 :
-			char = '/'
-		if i == 2 :
-			char = '-'
-		if i == 3 :
-			char = '\\'
-		i += 1
-		if i == 4 :
-			i = 0
-
-		draw.text((x, top),  "SOC:" + "%3d" % batt + "%  " + "%1.2f" % volt + "V    " + char, font=font, fill=255)
+		# Write two lines of text.
+		#if not user_text is None:
+		#	draw.text((x, top), user_text,  font=font, fill=255)
+		#else:
+		#	draw.text((x, top), "eth0: " + str(get_ip_address('eth0')), font=font, fill=255)
+		
+		draw.text((x, top),  "SOC:" + "%3d" % batt + "%  " + "%1.2f" % volt + "V", font=font, fill=255)
 		draw.text((x, top+8),  "wlan0: " + str(get_ip_address('wlan0')), font=font, fill=255)
 		draw.text((x, top+16), str(MemUsage.decode('utf-8')),  font=font, fill=255)
-		draw.text((x, top+25), str(Disk.decode('utf-8')),  font=font, fill=255)
+		# Write two lines of text.
+                if not user_text is None:
+                       draw.text((x, top+25), user_text,  font=font, fill=255)
+                else:
+                #       draw.text((x, top), "eth0: " + str(get_ip_address('eth0')), font=font, fill=255)
+			draw.text((x, top+25), str(Disk.decode('utf-8')),  font=font, fill=255)
 
 		# Display image.
 		disp.image(image)
 		disp.display()
-		time.sleep(1)
+		
+		# Update ROS
+		rospy.rostime.wallsleep(1.0)
+
