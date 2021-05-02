@@ -4,7 +4,7 @@ import time
 
 from Adafruit_MotorHAT import Adafruit_MotorHAT
 from std_msgs.msg import String
-
+from jetbot_teleop_msgs.msg import cmd_raw
 
 
 
@@ -39,33 +39,35 @@ def all_stop():
 
 
 # directional commands (degree, speed)
-def on_cmd_dir(msg):
-	rospy.loginfo(rospy.get_caller_id() + ' cmd_dir=%s', msg.data)
+#def on_cmd_dir(msg):
+	#rospy.loginfo(rospy.get_caller_id() + ' cmd_dir=%s', msg.data)
 
 # raw L/R motor commands (speed, speed)
 def on_cmd_raw(msg):
-	rospy.loginfo(rospy.get_caller_id() + ' cmd_raw=%s', msg.data)
+	#rospy.loginfo(rospy.get_caller_id() + ' cmd_raw=%s', msg.data)
+	set_speed(motor_left_ID, -msg.left)
+	set_speed(motor_right_ID,  -msg.right) 
 
 # simple string commands (left/right/forward/backward/stop)
-def on_cmd_str(msg):
-	rospy.loginfo(rospy.get_caller_id() + ' cmd_str=%s', msg.data)
+#def on_cmd_str(msg):
+	#rospy.loginfo(rospy.get_caller_id() + ' cmd_str=%s', msg.data)
 
-	if msg.data.lower() == "left":
-		set_speed(motor_left_ID,  -1.0)
-		set_speed(motor_right_ID,  1.0) 
-	elif msg.data.lower() == "right":
-		set_speed(motor_left_ID,   1.0)
-		set_speed(motor_right_ID, -1.0) 
-	elif msg.data.lower() == "forward":
-		set_speed(motor_left_ID,   1.0)
-		set_speed(motor_right_ID,  1.0)
-	elif msg.data.lower() == "backward":
-		set_speed(motor_left_ID,  -1.0)
-		set_speed(motor_right_ID, -1.0)  
-	elif msg.data.lower() == "stop":
-		all_stop()
-	else:
-		rospy.logerror(rospy.get_caller_id() + ' invalid cmd_str=%s', msg.data)
+	#if msg.data.lower() == "left":
+	#	set_speed(motor_left_ID,  -1.0)
+	#	set_speed(motor_right_ID,  1.0) 
+	#elif msg.data.lower() == "right":
+	#	set_speed(motor_left_ID,   1.0)
+	#	set_speed(motor_right_ID, -1.0) 
+	#elif msg.data.lower() == "forward":
+	#	set_speed(motor_left_ID,   1.0)
+	#	set_speed(motor_right_ID,  1.0)
+	#elif msg.data.lower() == "backward":
+	#	set_speed(motor_left_ID,  -1.0)
+	#	set_speed(motor_right_ID, -1.0)  
+	#elif msg.data.lower() == "stop":
+	#	all_stop()
+	#else:
+	#	rospy.logerror(rospy.get_caller_id() + ' invalid cmd_str=%s', msg.data)
 
 
 # initialization
@@ -86,9 +88,9 @@ if __name__ == '__main__':
 	# setup ros node
 	rospy.init_node('jetbot_motors')
 	
-	rospy.Subscriber('~cmd_dir', String, on_cmd_dir)
-	rospy.Subscriber('~cmd_raw', String, on_cmd_raw)
-	rospy.Subscriber('~cmd_str', String, on_cmd_str)
+	#rospy.Subscriber('~cmd_dir', String, on_cmd_dir)
+	rospy.Subscriber('~cmd_raw', cmd_raw, on_cmd_raw)
+	#rospy.Subscriber('~cmd_str', String, on_cmd_str)
 
 	# start running
 	rospy.spin()
