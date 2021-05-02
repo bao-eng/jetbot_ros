@@ -1,0 +1,26 @@
+[Unit]
+Description=python jetbot-oled script
+After=multi-user.target
+# After=network.target
+# After=systemd-user-sessions.service
+# After=network-online.target
+
+[Service]
+# User=spark
+# Type=simple
+# PIDFile=/run/my-service.pid
+WorkingDirectory=/home/jetbot/catkin_ws/src/jetbot_ros/scripts
+User=jetbot
+Type=idle
+ExecStart=/usr/bin/python /home/jetbot/catkin_ws/src/jetbot_ros/scripts/jetbot_oled.py &
+Restart=always
+# ExecReload=/home/transang/startup.sh reload
+# ExecStop=/home/transang/startup.sh stop
+# TimeoutSec=30
+# Restart=on-failure
+# RestartSec=30
+# StartLimitInterval=350
+# StartLimitBurst=10
+
+[Install]
+WantedBy=multi-user.target
