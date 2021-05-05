@@ -10,4 +10,6 @@
 
   <node name="vl53l1x" pkg="vl53l1x" type="vl53l1x_node"/>
 
+  <node name="jetbot_camera" pkg="jetbot_ros" type="jetbot_camera"/>
+
 </launch>
