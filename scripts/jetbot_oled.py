@@ -95,6 +95,8 @@ if __name__ == '__main__':
 		cmd = "df -h | awk '$NF==\"/\"{printf \"Disk: %d/%dGB %s\", $3,$2,$5}'"
 		Disk = subprocess.check_output(cmd, shell = True )
 		batt = readCapacity(bus)
+		if batt > 100 :
+			batt = 100
 		volt = readVoltage(bus)
 
 		if i == 0 :
